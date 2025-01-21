@@ -41,7 +41,17 @@ return function(filepath)
     end
   end
 
-  -- print(header(stream))
+  while true do
+    local name, a, b = header(stream)
+    if name == "RGBA" then break end
+    stream:seek("cur", a + b)
+  end
+
+  --- @type [integer, integer, integer, integer][]
+  result.palette = {}
+  for i = 1, 256 do
+    result.palette[i] = {byte(stream), byte(stream), byte(stream), byte(stream)}
+  end
 
   stream:close()
   return result
