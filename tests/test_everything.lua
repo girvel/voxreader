@@ -3,15 +3,9 @@ local inspect = require("tests.resources.inspect")
 
 it("Parses the example file", function()
   local path = "tests/resources/tesseract.vox"
-  local f = assert(io.open(path, "rb"))
-  local file_bytes = f:read("*a")
-  f:close()
-
-  print("\n---------- CONTENT ----------")
-  print(file_bytes:sub(1, 100))
-
   local voxel_data = voxreader(path)
 
-  print("\n---------- RESULT ----------")
-  print(inspect(voxel_data))
+  assert.are_equal(voxel_data.version, 200)
+  assert.are_same(voxel_data.size, {40, 40, 40})
+  assert.are_equal(#voxel_data.voxels, 2790)
 end)

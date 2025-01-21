@@ -1,11 +1,19 @@
 --- @param stream file*
-local read_header = function(stream)
-  print(stream:read(4))
-  --assert(stream:read(4) ~= "PACK")
-  return {
-    content_size = stream:read(4):byte(),
-    children_size = stream:read(4):byte(),
-  }
+local header = function(stream)
+  stream:seek("cur", 12)
+end
+
+--- @param stream file*
+--- @return integer
+local byte = function(stream)
+  return assert(stream:read(1), "Expected byte"):byte()
+end
+
+--- @param stream file*
+--- @return integer
+local int = function(stream)
+  local a, b, c, d = byte(stream), byte(stream), byte(stream), byte(stream)
+  return a + b * 256 + c * 65536 + d * 166777216
 end
 
 --- @param filepath string
@@ -14,14 +22,24 @@ return function(filepath)
   local result = {}
 
   stream:seek("cur", 4)  -- "VOX "
-  result.version = string.byte(stream:read(4))
+  result.version = int(stream)
 
-  read_header(stream)  -- "MAIN"
-  result.models = {{}}
+  header(stream)  -- "MAIN"
+  header(stream)  -- "SIZE"
 
-  read_header(stream)  -- "SIZE"
-  result.models[1].size = {stream:read(4):byte(), stream:read(4):byte(), stream:read(4):byte()}
-  --local xyzi = read_header(stream)  -- "XYZI"
+  --- @type [integer, integer, integer]
+  result.size = {int(stream), int(stream), int(stream)}
+  --- @type [integer, integer, integer, integer][]
+  result.voxels = {}
+
+  header(stream)  -- "XYZI"
+  do
+    local n = int(stream)
+
+    for i = 1, n do
+      result.voxels[i] = {byte(stream), byte(stream), byte(stream), byte(stream)}
+    end
+  end
 
   stream:close()
   return result
