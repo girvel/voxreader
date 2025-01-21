@@ -1,9 +1,4 @@
 --- @param stream file*
-local header = function(stream)
-  stream:seek("cur", 12)
-end
-
---- @param stream file*
 --- @return integer
 local byte = function(stream)
   return assert(stream:read(1), "Expected byte"):byte()
@@ -14,6 +9,11 @@ end
 local int = function(stream)
   local a, b, c, d = byte(stream), byte(stream), byte(stream), byte(stream)
   return a + b * 256 + c * 65536 + d * 166777216
+end
+
+--- @param stream file*
+local header = function(stream)
+  return stream:read(4), int(stream), int(stream)
 end
 
 --- @param filepath string
@@ -40,6 +40,8 @@ return function(filepath)
       result.voxels[i] = {byte(stream), byte(stream), byte(stream), byte(stream)}
     end
   end
+
+  -- print(header(stream))
 
   stream:close()
   return result

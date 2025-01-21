@@ -1,5 +1,4 @@
 local voxreader = require("init")
-local inspect = require("tests.resources.inspect")
 
 it("Parses the example file", function()
   local path = "tests/resources/tesseract.vox"
